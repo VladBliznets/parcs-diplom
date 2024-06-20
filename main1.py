@@ -71,4 +71,24 @@ class AirTrafficSimulator:
 
     @staticmethod
     def calculate_hex(lat, lon):
-        return int(lat) * 100 + int(lon)  
+        # Відстань у км, яку потрібно покрити (довжина сторони шестикутника)
+        side_length_km = 10
+
+        # Конвертуємо відстань у радіани
+        side_length_rad = side_length_km / AirTrafficSimulator.EARTH_RADIUS
+
+        # Обчислюємо координати вершин шестикутника
+        vertices = []
+        for i in range(6):
+            angle = math.radians(i * 60)
+            lat_vertex = math.asin(math.sin(math.radians(lat)) * math.cos(side_length_rad) +
+                                   math.cos(math.radians(lat)) * math.sin(side_length_rad) * math.cos(angle))
+            lon_vertex = math.radians(lon) + math.atan2(math.sin(angle) * math.sin(side_length_rad) * math.cos(math.radians(lat)),
+                                                        math.cos(side_length_rad) - math.sin(math.radians(lat)) * math.sin(lat_vertex))
+            vertices.append((math.degrees(lat_vertex), math.degrees(lon_vertex)))
+
+        # Унікальний ідентифікатор для шестикутника
+        avg_lat = sum(vertex[0] for vertex in vertices) / 6
+        avg_lon = sum(vertex[1] for vertex in vertices) / 6
+
+        return f"{round(avg_lat, 4)}_{round(avg_lon, 4)}"
