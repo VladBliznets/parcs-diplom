@@ -71,6 +71,4 @@ class AirTrafficSimulator:
 
     @staticmethod
     def calculate_hex(lat, lon):
-        # Функція для обчислення шестикутника за координатами
-        # Потребує реалізації врахування реальних розмірів Землі і розміщення шестикутників
-        return int(lat) * 100 + int(lon)  # Простий приклад
+        return int(lat) * 100 + int(lon)  
