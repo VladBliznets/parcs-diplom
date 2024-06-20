@@ -3,6 +3,8 @@ import random
 import math
 
 class AirTrafficSimulator:
+    EARTH_RADIUS = 6371  # радіус Землі в км
+
     def __init__(self, workers=None, input_file_name=None, output_file_name=None):
         self.input_file_name = input_file_name
         self.output_file_name = output_file_name
@@ -12,14 +14,21 @@ class AirTrafficSimulator:
     def simulate(self):
         print("Simulation Started")
         flights = self.read_input()
-        n = len(flights)
         k = len(self.workers)
 
         # Розподіл рейсів між воркерами залежно від зон
+        zone_size = 180 / k  # Кожна зона буде відповідати частині широти
+        zones = [[] for _ in range(k)]
+
+        for flight in flights:
+            lat = flight['start'][0]
+            zone_index = min(int((lat + 90) // zone_size), k - 1)  # Визначення зони за широтою
+            zones[zone_index].append(flight)
+
         mapped = []
         for i in range(k):
             print("Assigning flights to worker %d" % i)
-            mapped.append(self.workers[i].mymap(flights[(n * i // k): (n * (i + 1) // k)]))
+            mapped.append(self.workers[i].mymap(zones[i]))
 
         # Збір результатів з усіх воркерів і запис їх у вихідний файл
         collisions = self.myreduce(mapped)
@@ -65,7 +74,7 @@ class AirTrafficSimulator:
         # Запис результатів у вихідний файл
         with open(self.output_file_name, 'w') as f:
             for col in collisions:
-                f.write("%s collides with %s\n" % col)
+                f.write("Flight %d collides with Flight %d\n" % col)
             f.write("Total collisions: %d\n" % len(collisions))
         print("Output written")
 
